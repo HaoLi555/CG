@@ -31,6 +31,7 @@ public:
         Ray tr(trSource, trDirection);
         bool inter = o->intersect(tr, h, tmin);
         if (inter) {
+            // NOTE: 这里转置应该就是逆矩阵
             h.set(h.getT(), h.getMaterial(), transformDirection(transform.transposed(), h.getNormal()).normalized());
         }
         return inter;

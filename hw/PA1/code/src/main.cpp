@@ -33,6 +33,37 @@ int main(int argc, char *argv[]) {
     // through that pixel and finding its intersection with
     // the scene.  Write the color at the intersection to that
     // pixel in your output image.
+
+    SceneParser sp(inputFile.c_str());
+    Image image(sp.getCamera()->getWidth(), sp.getCamera()->getHeight());
+    for (int x = 0; x < sp.getCamera()->getWidth(); ++x)
+    {
+        for (int y = 0; y < sp.getCamera()->getHeight(); ++y)
+        {
+            Ray cam_ray = sp.getCamera()->generateRay(Vector2f(x, y));
+            assert(cam_ray.getDirection().length() == 1.0f); // make sure the ray direction is normalized
+            Group *base_group = sp.getGroup();
+            Hit hit;
+            if (base_group->intersect(cam_ray, hit, 0.0f))
+            {
+                Vector3f final_color = Vector3f::ZERO;
+                for (int li = 0; li < sp.getNumLights(); ++li)
+                {
+                    Light *light = sp.getLight(li);
+                    Vector3f L, light_color;
+                    light->getIllumination(cam_ray.pointAtParameter(hit.getT()), L, light_color);
+                    final_color += hit.getMaterial()->Shade(cam_ray, hit, L, light_color);
+                }
+                image.SetPixel(x, y, final_color);
+            }
+            else
+            {
+                image.SetPixel(x, y, sp.getBackgroundColor());
+            }
+        }
+    }
+
+    image.SaveImage(outputFile.c_str());
     cout << "Hello! Computer Graphics!" << endl;
     return 0;
 }
